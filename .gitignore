@@ -1,0 +1,20 @@
+
+node_modules/
+.pnp/
+.pnp.js
+
+# 测试
+coverage/
+
+# 构建输出
+dist/
+build/
+
+# 环境变量
+.env
+.env.local
+
+# 日志
+npm-debug.log*
+yarn-debug.log*
+
