@@ -1,3 +1,5 @@
+import { DirtyLevels } from "./constants";
+
 export function effect(fn, options?) {
   const _effect = new ReactiveEffect(fn, () => {
     _effect.run();
@@ -27,14 +29,25 @@ function postCleanEffect(effect) {
   }
 }
 
-class ReactiveEffect {
+export class ReactiveEffect {
   _trackId = 0;
   deps = [];
   _depsLength = 0;
   _running = 0;
+  _dirtyLevel = DirtyLevels.Dirty;
   public active = true;
   constructor(public fn, public scheduler?) {}
+
+  public get dirty() {
+    return this._dirtyLevel === DirtyLevels.Dirty;
+  }
+
+  public set dirty(v) {
+    this._dirtyLevel = v ? DirtyLevels.Dirty : DirtyLevels.NoDirty;
+  }
+
   run() {
+    this._dirtyLevel = DirtyLevels.NoDirty;
     if (!this.active) {
       return this.fn();
     }
@@ -79,6 +92,10 @@ export function trackEffect(effect, dep) {
 
 export function triggerEffects(dep) {
   for (const effect of dep.keys()) {
+    if (effect._dirtyLevel < DirtyLevels.Dirty) {
+      effect._dirtyLevel = DirtyLevels.Dirty;
+    }
+
     if (effect.scheduler) {
       if (!effect._running) {
         effect.scheduler();
